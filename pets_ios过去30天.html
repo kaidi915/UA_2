@@ -42,11 +42,15 @@ tbody tr:nth-child(even){background:#f7f8fd}
 tbody tr:hover{background:#eaedff}
 td{padding:4px 10px;border-right:1px solid #eee;border-bottom:1px solid #eee;
     text-align:right;font-variant-numeric:tabular-nums}
-td:nth-child(1){position:sticky;left:0;min-width:90px;background:inherit;z-index:2;
-    font-weight:600;text-align:left;border-right:2px solid #dde}
+td:nth-child(1){position:sticky;left:0;min-width:90px;background:#e8e9f0;z-index:2;
+    font-weight:600;text-align:left;border-right:2px solid #c8cade}
+tbody tr:nth-child(even) td:nth-child(1){background:#dddee8}
+tbody tr:hover td:nth-child(1){background:#d0d3ef}
 thead th:nth-child(1){position:sticky;left:0;background:#2d2d44;z-index:5}
 thead tr:first-child th:nth-child(1){background:#1a1a2e;z-index:5}
-.geo-table td:nth-child(2){position:sticky;left:90px;min-width:80px;background:inherit;z-index:2;text-align:right;border-right:2px solid #dde}
+.geo-table td:nth-child(2){position:sticky;left:90px;min-width:80px;background:#e8e9f0;z-index:2;text-align:right;border-right:2px solid #c8cade}
+.geo-table tbody tr:nth-child(even) td:nth-child(2){background:#dddee8}
+.geo-table tbody tr:hover td:nth-child(2){background:#d0d3ef}
 .note{font-size:11px;color:#888;margin-bottom:10px;padding-left:4px}
 .geo-scroll-wrap{overflow:auto;max-height:480px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .geo-scroll-wrap table{box-shadow:none;border-radius:0}
@@ -89,7 +93,7 @@ thead tr:last-child th.g8{background:#d84315;color:#fff} thead tr:last-child th.
 </head>
 <body>
 <h1>Pets iOS最近30天数据</h1>
-<div class="meta">日期范围：2026-04-22 ~ 2026-05-19（表3 geo：2026-04-22~2026-05-19）&nbsp;|&nbsp; Revenue口径：各装机日取当前最大可用Dx累计值 &nbsp;|&nbsp; 生成：2026-05-20 18:15:21</div>
+<div class="meta">日期范围：2026-04-22 ~ 2026-05-19（表3 geo：2026-04-22~2026-05-19）&nbsp;|&nbsp; Revenue口径：各装机日取当前最大可用Dx累计值 &nbsp;|&nbsp; 生成：2026-05-20 18:36:54</div>
 <div class="tab-bar">
   <button class="tab-btn active" onclick="showTab(0)">渠道 × 周</button>
   <button class="tab-btn" onclick="showTab(1)">BLD vs IAP</button>
