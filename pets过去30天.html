@@ -23,6 +23,7 @@
   <span class="title">📊 Pets 数据报表</span>
   <button class="plat-btn active" id="btn-ios"     onclick="showPlat('ios')">iOS</button>
   <button class="plat-btn"        id="btn-android" onclick="showPlat('android')">Android</button>
+  <button class="plat-btn"        id="btn-both"    onclick="showPlat('both')">双端</button>
   <span class="spacer"></span>
   <a class="open-new" id="open-new" href="#" target="_blank" rel="noopener">↗ 新窗口打开当前平台</a>
 </div>
@@ -32,17 +33,20 @@
 <script>
   var URLS = {
     ios:     "https://kaidi915.github.io/UA_2/pets_ios%E8%BF%87%E5%8E%BB30%E5%A4%A9.html",
-    android: "https://kaidi915.github.io/UA_2/pets_android%E8%BF%87%E5%8E%BB30%E5%A4%A9.html"
+    android: "https://kaidi915.github.io/UA_2/pets_android%E8%BF%87%E5%8E%BB30%E5%A4%A9.html",
+    both:    "https://kaidi915.github.io/UA_2/pets_%E5%8F%8C%E7%AB%AF%E8%BF%87%E5%8E%BB30%E5%A4%A9.html"
   };
   function showPlat(p){
     document.getElementById('report').src = URLS[p];
     document.getElementById('open-new').href = URLS[p];
     document.getElementById('btn-ios').classList.toggle('active', p==='ios');
     document.getElementById('btn-android').classList.toggle('active', p==='android');
+    document.getElementById('btn-both').classList.toggle('active', p==='both');
     try { history.replaceState(null, '', '#'+p); } catch(e){}
   }
-  // 支持 #android 直达，默认 iOS
-  showPlat(location.hash === '#android' ? 'android' : 'ios');
+  // 支持 #android / #both 直达，默认 iOS
+  var _h = location.hash.replace('#','');
+  showPlat(URLS[_h] ? _h : 'ios');
 </script>
 </body>
 </html>
