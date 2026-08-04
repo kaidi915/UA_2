@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Bistro Android最近30天数据</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC",sans-serif;font-size:12px;background:#f8f9ff;color:#111}
+h1{padding:16px 24px 4px;font-size:16px;color:#222;font-weight:700}
+.meta{padding:2px 24px 14px;font-size:11px;color:#999}
+
+/* ── 主Tab ── */
+.main-tab-bar{display:flex;gap:4px;padding:0 24px;border-bottom:2px solid #888;background:#f8f9ff}
+.main-tab-btn{padding:10px 28px;border:none;background:#e8e8e8;border-radius:6px 6px 0 0;
+               cursor:pointer;font-size:13px;color:#111;font-weight:600}
+.main-tab-btn.active{background:#555;color:#fff}
+.main-tab-pane{display:none;padding:0 0 60px}
+.main-tab-pane.active{display:block}
+
+/* ── 子Tab ── */
+.sub-tab-bar{display:flex;gap:3px;padding:12px 24px 0;border-bottom:1px solid #aaa}
+.sub-tab-btn{padding:7px 18px;border:none;background:#e0e0e0;border-radius:5px 5px 0 0;
+              cursor:pointer;font-size:12px;color:#111;font-weight:500}
+.sub-tab-btn.active{background:#444;color:#fff}
+.sub-tab-pane{display:none;padding:16px 24px 40px}
+.sub-tab-pane.active{display:block}
+
+/* ── Campaign渠道子Tab ── */
+.camp-tab-bar{display:flex;gap:3px;padding:12px 24px 0;border-bottom:1px solid #aaa;flex-wrap:wrap}
+.camp-tab-btn{padding:7px 18px;border:none;background:#e0e0e0;border-radius:5px 5px 0 0;
+               cursor:pointer;font-size:12px;color:#111;font-weight:500}
+.camp-tab-btn.active{background:#444;color:#fff}
+.camp-tab-pane{display:none;padding:16px 24px 40px}
+.camp-tab-pane.active{display:block}
+
+/* ── 渠道手法子Tab ── */
+.ch-sub-tab-bar{display:flex;gap:3px;padding:12px 24px 0;border-bottom:1px solid #aaa}
+.ch-sub-tab-btn{padding:7px 18px;border:none;background:#e0e0e0;border-radius:5px 5px 0 0;
+                 cursor:pointer;font-size:12px;color:#111;font-weight:500}
+.ch-sub-tab-btn.active{background:#444;color:#fff}
+.ch-sub-tab-pane{display:none;padding:16px 24px 40px}
+.ch-sub-tab-pane.active{display:block}
+
+/* ── 渠道手法渠道切换Tab ── */
+.ch-method-tab-bar{display:flex;gap:3px;padding:12px 24px 0;border-bottom:1px solid #aaa;flex-wrap:wrap}
+.ch-method-tab-btn{padding:6px 16px;border:none;background:#e0e0e0;border-radius:5px 5px 0 0;
+                    cursor:pointer;font-size:12px;color:#111;font-weight:500}
+.ch-method-tab-btn.active{background:#444;color:#fff}
+.ch-method-tab-pane{display:none;padding:12px 0 0}
+.ch-method-tab-pane.active{display:block}
+/* ── 渠道Campaign渠道切换Tab（独立，避免与手法子Tab串台）── */
+.ch-camp-tab-bar{display:flex;gap:3px;padding:12px 24px 0;border-bottom:1px solid #aaa;flex-wrap:wrap}
+.ch-camp-tab-btn{padding:6px 16px;border:none;background:#e0e0e0;border-radius:5px 5px 0 0;
+                  cursor:pointer;font-size:12px;color:#111;font-weight:500}
+.ch-camp-tab-btn.active{background:#444;color:#fff}
+.ch-camp-tab-pane{display:none;padding:12px 24px 0}
+.ch-camp-tab-pane.active{display:block}
+
+/* ── 切换按钮 ── */
+.week-switch-btn{padding:6px 18px;border:1px solid #bbb;background:#f0f0f0;
+                  border-radius:4px;cursor:pointer;font-size:12px;color:#111;margin-right:6px}
+.week-switch-btn.active{background:#444;color:#fff;border-color:#444}
+
+.search-bar{margin-bottom:14px}
+.search-bar input{padding:6px 12px;border:1px solid #aab4f0;border-radius:6px;
+                   font-size:12px;width:320px;background:#fff}
+.media-block{margin-bottom:32px}
+.media-title{font-size:13px;font-weight:700;color:#1e3a8a;padding:6px 0 4px 10px;
+              border-left:4px solid #4c6ee0;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.media-subtitle{font-size:12px;color:#555;font-weight:600;border-left:3px solid #aab;
+                 padding-left:8px;margin-bottom:4px}
+.cost-badge{font-size:11px;font-weight:400;color:#fff;background:#4c5ecf;
+             padding:2px 8px;border-radius:10px;white-space:nowrap}
+.table-wrap{overflow:auto;max-height:480px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.table-wrap table{box-shadow:none;border-radius:0}
+table{border-collapse:collapse;white-space:nowrap;background:#fff;
+       box-shadow:0 1px 4px rgba(0,0,0,.07);border-radius:8px}
+
+/* ── 表头颜色（降饱和） ── */
+thead tr:first-child th.gh{background:#2c3e8c;color:#e8eeff;text-align:center;
+    padding:5px 8px;border-right:1px solid #4a5aaf;font-size:11px}
+thead tr:first-child th.dim-gh{background:#2c3e8c;color:#c8d4ff;text-align:left}
+thead tr:first-child th{position:sticky;top:0;z-index:4;background:#2c3e8c}
+thead tr:last-child th{background:#3a5fcf;color:#fff;padding:5px 8px;
+    border-right:1px solid #5a7ae8;font-size:11px;position:sticky;top:28px;z-index:4}
+
+/* 分组表头配色（亮色方案） */
+thead tr:first-child th.g0{background:#5c7de0} thead tr:first-child th.g1{background:#d97c20}
+thead tr:first-child th.g2{background:#1ea87c} thead tr:first-child th.g3{background:#b03090}
+thead tr:first-child th.g4{background:#2098d0} thead tr:first-child th.g5{background:#c84040}
+thead tr:first-child th.g6{background:#8040c8} thead tr:first-child th.g7{background:#2aaa40}
+thead tr:first-child th.g8{background:#c86020} thead tr:first-child th.g9{background:#1888b0}
+thead tr:last-child th.g0{background:#4a6cd0;color:#fff} thead tr:last-child th.g1{background:#c46a10;color:#fff}
+thead tr:last-child th.g2{background:#0d9468;color:#fff} thead tr:last-child th.g3{background:#9c2080;color:#fff}
+thead tr:last-child th.g4{background:#0d84bc;color:#fff} thead tr:last-child th.g5{background:#b42e2e;color:#fff}
+thead tr:last-child th.g6{background:#6e2eb4;color:#fff} thead tr:last-child th.g7{background:#189630;color:#fff}
+thead tr:last-child th.g8{background:#b44e10;color:#fff} thead tr:last-child th.g9{background:#0874a0;color:#fff}
+
+.geo-table thead tr:last-child th:nth-child(2){position:sticky;left:90px;z-index:5}
+.geo-table thead tr:first-child th:nth-child(2){position:sticky;left:90px;z-index:5}
+tbody tr:nth-child(even){background:#f5f7ff}
+tbody tr:hover{background:#eaedff}
+td{padding:4px 10px;border-right:1px solid #e8eaf0;border-bottom:1px solid #e8eaf0;
+    text-align:right;font-variant-numeric:tabular-nums}
+td:nth-child(1){position:sticky;left:0;min-width:90px;background:#edf0ff;z-index:2;
+    font-weight:600;text-align:left;border-right:2px solid #c8d0f0}
+tbody tr:nth-child(even) td:nth-child(1){background:#e4e8ff}
+tbody tr:hover td:nth-child(1){background:#d8deff}
+thead th:nth-child(1){position:sticky;left:0;background:#3a5fcf;z-index:5}
+thead tr:first-child th:nth-child(1){background:#2c3e8c;z-index:5}
+.geo-table td:nth-child(2){position:sticky;left:90px;min-width:80px;background:#edf0ff;z-index:2;text-align:right;border-right:2px solid #c8d0f0}
+.geo-table tbody tr:nth-child(even) td:nth-child(2){background:#e4e8ff}
+.geo-table tbody tr:hover td:nth-child(2){background:#d8deff}
+.note{font-size:11px;color:#888;margin-bottom:10px;padding-left:4px}
+.geo-scroll-wrap{overflow:auto;max-height:480px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.geo-scroll-wrap table{box-shadow:none;border-radius:0}
+.geo-scroll-wrap thead tr:first-child th{position:sticky;top:0;z-index:5}
+.geo-scroll-wrap thead tr:last-child th{position:sticky;top:28px;z-index:5}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+th.sortable:hover{background:#2a4ab8}
+.sort-arrow{display:inline-block;margin-left:4px;font-size:10px;opacity:.5}
+.sort-arrow.asc::after{content:"▲"}
+.sort-arrow.desc::after{content:"▼"}
+.col-filter{display:block;margin-top:3px;width:100%;font-size:10px;background:#3a5fcf;
+             color:#e8f0ff;border:1px solid #5a7ae8;border-radius:3px;padding:1px 2px;cursor:pointer}
+.col-filter:focus{outline:none;border-color:#a0c0ff}
+
+/* 周折叠行样式 */
+tr.week-row{cursor:pointer;background:#eef0ff !important;font-weight:700}
+tr.week-row td{font-weight:700}
+tr.week-row:hover{background:#e0e5ff !important}
+tr.week-row td:nth-child(1){background:#dde4ff !important;font-weight:700}
+tr.week-row:hover td:nth-child(1){background:#ccd6ff !important}
+tr.week-row td:nth-child(1)::before{content:"▶ ";font-size:10px;opacity:.6}
+tr.week-row.expanded td:nth-child(1)::before{content:"▼ ";font-size:10px;opacity:.6}
+td.day-indent{padding-left:22px !important;font-weight:400 !important;font-style:italic;color:#445}
+td.dim-cell{text-align:left}
+
+/* 渠道行折叠样式 */
+tr.media-row{cursor:pointer;background:#eef0ff !important;font-weight:700}
+tr.media-row td{font-weight:700}
+tr.media-row:hover{background:#e0e5ff !important}
+tr.media-row td:nth-child(1){background:#dde4ff !important;font-weight:700}
+tr.media-row td:nth-child(1)::before{content:"▶ ";font-size:10px;opacity:.6}
+tr.media-row.expanded td:nth-child(1)::before{content:"▼ ";font-size:10px;opacity:.6}
+td.type-indent{padding-left:26px !important;font-weight:400 !important;color:#445}
+
+/* 分组配色 — 奇数行（极浅色调） */
+td.g0{background:#f6f7ff} td.g1{background:#fffaf2} td.g2{background:#f2fff9}
+td.g3{background:#fff6fd} td.g4{background:#f2fafe} td.g5{background:#fff6f6}
+td.g6{background:#f8f3ff} td.g7{background:#f3fff7} td.g8{background:#fff9f2}
+td.g9{background:#f2fbff}
+/* 偶数行叠加略深 */
+tr:nth-child(even) td.g0{background:#eef0ff} tr:nth-child(even) td.g1{background:#fff4e0}
+tr:nth-child(even) td.g2{background:#e4faef} tr:nth-child(even) td.g3{background:#fcedf8}
+tr:nth-child(even) td.g4{background:#e4f4ff} tr:nth-child(even) td.g5{background:#ffeded}
+tr:nth-child(even) td.g6{background:#f0eaff} tr:nth-child(even) td.g7{background:#eafff0}
+tr:nth-child(even) td.g8{background:#fff4e8} tr:nth-child(even) td.g9{background:#e4f6ff}
+/* hover 时统一高亮覆盖分组色 */
+tr:hover td.g0,tr:hover td.g1,tr:hover td.g2,tr:hover td.g3,tr:hover td.g4,
+tr:hover td.g5,tr:hover td.g6,tr:hover td.g7,tr:hover td.g8,tr:hover td.g9{background:#eaedff}
+/* 周行和渠道行 hover 时也覆盖 */
+tr.week-row:hover td.g0,tr.week-row:hover td.g1,tr.week-row:hover td.g2,
+tr.week-row:hover td.g3,tr.week-row:hover td.g4,tr.week-row:hover td.g5,
+tr.week-row:hover td.g6,tr.week-row:hover td.g7,tr.week-row:hover td.g8,
+tr.week-row:hover td.g9{background:#e0e5ff}
+tr.media-row:hover td.g0,tr.media-row:hover td.g1,tr.media-row:hover td.g2,
+tr.media-row:hover td.g3,tr.media-row:hover td.g4,tr.media-row:hover td.g5,
+tr.media-row:hover td.g6,tr.media-row:hover td.g7,tr.media-row:hover td.g8,
+tr.media-row:hover td.g9{background:#e0e4f5}
+
+/* 列组折叠 */
+.cg-arrow{font-size:9px;opacity:.7;margin-left:4px;transition:opacity .15s}
+th.cg-hdr:hover .cg-arrow{opacity:1}
+</style>
+</head>
+<body>
+<h1>Bistro Android 分渠道分手法 长线回收（2026-05-01 ~ 2026-06-30）</h1>
+<div class="meta">日期范围：2026-05-01 ~ 2026-06-30（geo：2026-07-07~2026-08-03）&nbsp;|&nbsp; Revenue口径：各装机日取当前最大可用Dx累计值 &nbsp;|&nbsp; 生成：2026-08-04 13:14:57</div>
+
+<div class="media-block"><div class="media-title">install</div><div class="table-wrap"><table><thead><tr><th class="gh dim-gh">渠道</th><th colspan="3" class="gh g0">基础</th><th colspan="4" class="gh g1">IAP倍率</th><th colspan="6" class="gh g2">IAP roas</th><th colspan="6" class="gh g3">IAA roas</th><th colspan="6" class="gh g4">total roas</th><th colspan="5" class="gh g5">留存</th></tr><tr><th>渠道</th><th class="g0">installs</th><th class="g0">cost</th><th class="g0">CPI</th><th class="g1">0-3</th><th class="g1">0-6</th><th class="g1">6-13</th><th class="g1">6-29</th><th class="g2">D0 IAP</th><th class="g2">D1 IAP</th><th class="g2">D3 IAP</th><th class="g2">D6 IAP</th><th class="g2">D13 IAP</th><th class="g2">D29 IAP</th><th class="g3">D0 IAA</th><th class="g3">D1 IAA</th><th class="g3">D3 IAA</th><th class="g3">D6 IAA</th><th class="g3">D13 IAA</th><th class="g3">D29 IAA</th><th class="g4">D0 tot</th><th class="g4">D1 tot</th><th class="g4">D3 tot</th><th class="g4">D6 tot</th><th class="g4">D13 tot</th><th class="g4">D29 tot</th><th class="g5">次留</th><th class="g5">3留</th><th class="g5">7留</th><th class="g5">13留</th><th class="g5">29留</th></tr></thead><tbody><tr style="font-weight:700;background:#eef"><td class="dim-cell">合计</td><td class="g0">4709</td><td class="g0">$6,678</td><td class="g0">1.42</td><td class="g1">1.37</td><td class="g1">1.53</td><td class="g1">1.36</td><td class="g1">1.77</td><td class="g2">0.57%</td><td class="g2">0.60%</td><td class="g2">0.78%</td><td class="g2">0.87%</td><td class="g2">1.18%</td><td class="g2">1.54%</td><td class="g3">0.46%</td><td class="g3">0.70%</td><td class="g3">0.95%</td><td class="g3">1.46%</td><td class="g3">2.77%</td><td class="g3">4.02%</td><td class="g4">1.02%</td><td class="g4">1.29%</td><td class="g4">1.73%</td><td class="g4">2.32%</td><td class="g4">3.95%</td><td class="g4">5.56%</td><td class="g5">21.58%</td><td class="g5">11.02%</td><td class="g5">6.94%</td><td class="g5">5.48%</td><td class="g5">3.99%</td></tr>
+<tr><td class="dim-cell">Facebook Ads</td><td class="g0">2202</td><td class="g0">$5,166</td><td class="g0">2.35</td><td class="g1">1.37</td><td class="g1">1.53</td><td class="g1">1.36</td><td class="g1">1.77</td><td class="g2">0.73%</td><td class="g2">0.77%</td><td class="g2">1.00%</td><td class="g2">1.12%</td><td class="g2">1.53%</td><td class="g2">1.99%</td><td class="g3">0.26%</td><td class="g3">0.48%</td><td class="g3">0.72%</td><td class="g3">1.29%</td><td class="g3">2.80%</td><td class="g3">4.22%</td><td class="g4">1.00%</td><td class="g4">1.25%</td><td class="g4">1.72%</td><td class="g4">2.41%</td><td class="g4">4.33%</td><td class="g4">6.21%</td><td class="g5">24.52%</td><td class="g5">13.90%</td><td class="g5">8.81%</td><td class="g5">6.95%</td><td class="g5">5.54%</td></tr>
+<tr><td class="dim-cell">unityads_int</td><td class="g0">2507</td><td class="g0">$1,512</td><td class="g0">0.60</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g3">1.11%</td><td class="g3">1.44%</td><td class="g3">1.76%</td><td class="g3">2.04%</td><td class="g3">2.68%</td><td class="g3">3.34%</td><td class="g4">1.11%</td><td class="g4">1.44%</td><td class="g4">1.76%</td><td class="g4">2.04%</td><td class="g4">2.68%</td><td class="g4">3.34%</td><td class="g5">18.99%</td><td class="g5">8.50%</td><td class="g5">5.31%</td><td class="g5">4.19%</td><td class="g5">2.63%</td></tr>
+</tbody></table></div></div>
+<div class="media-block"><div class="media-title">BLD（含 HBAD）</div><div class="table-wrap"><table><thead><tr><th class="gh dim-gh">渠道</th><th colspan="3" class="gh g0">基础</th><th colspan="4" class="gh g1">IAP倍率</th><th colspan="6" class="gh g2">IAP roas</th><th colspan="6" class="gh g3">IAA roas</th><th colspan="6" class="gh g4">total roas</th><th colspan="5" class="gh g5">留存</th></tr><tr><th>渠道</th><th class="g0">installs</th><th class="g0">cost</th><th class="g0">CPI</th><th class="g1">0-3</th><th class="g1">0-6</th><th class="g1">6-13</th><th class="g1">6-29</th><th class="g2">D0 IAP</th><th class="g2">D1 IAP</th><th class="g2">D3 IAP</th><th class="g2">D6 IAP</th><th class="g2">D13 IAP</th><th class="g2">D29 IAP</th><th class="g3">D0 IAA</th><th class="g3">D1 IAA</th><th class="g3">D3 IAA</th><th class="g3">D6 IAA</th><th class="g3">D13 IAA</th><th class="g3">D29 IAA</th><th class="g4">D0 tot</th><th class="g4">D1 tot</th><th class="g4">D3 tot</th><th class="g4">D6 tot</th><th class="g4">D13 tot</th><th class="g4">D29 tot</th><th class="g5">次留</th><th class="g5">3留</th><th class="g5">7留</th><th class="g5">13留</th><th class="g5">29留</th></tr></thead><tbody><tr style="font-weight:700;background:#eef"><td class="dim-cell">合计</td><td class="g0">367228</td><td class="g0">$582,434</td><td class="g0">1.59</td><td class="g1">4.57</td><td class="g1">7.45</td><td class="g1">1.76</td><td class="g1">3.37</td><td class="g2">0.80%</td><td class="g2">1.87%</td><td class="g2">3.68%</td><td class="g2">6.00%</td><td class="g2">10.56%</td><td class="g2">20.20%</td><td class="g3">0.94%</td><td class="g3">1.85%</td><td class="g3">3.28%</td><td class="g3">5.21%</td><td class="g3">8.76%</td><td class="g3">15.16%</td><td class="g4">1.74%</td><td class="g4">3.72%</td><td class="g4">6.96%</td><td class="g4">11.21%</td><td class="g4">19.32%</td><td class="g4">35.36%</td><td class="g5">42.70%</td><td class="g5">27.79%</td><td class="g5">21.03%</td><td class="g5">16.60%</td><td class="g5">11.97%</td></tr>
+<tr><td class="dim-cell">applovin_int</td><td class="g0">297448</td><td class="g0">$408,231</td><td class="g0">1.37</td><td class="g1">4.60</td><td class="g1">7.46</td><td class="g1">1.79</td><td class="g1">3.48</td><td class="g2">0.74%</td><td class="g2">1.76%</td><td class="g2">3.39%</td><td class="g2">5.50%</td><td class="g2">9.86%</td><td class="g2">19.16%</td><td class="g3">0.87%</td><td class="g3">1.75%</td><td class="g3">3.16%</td><td class="g3">5.08%</td><td class="g3">8.67%</td><td class="g3">15.12%</td><td class="g4">1.61%</td><td class="g4">3.50%</td><td class="g4">6.55%</td><td class="g4">10.57%</td><td class="g4">18.53%</td><td class="g4">34.28%</td><td class="g5">43.74%</td><td class="g5">28.40%</td><td class="g5">21.37%</td><td class="g5">16.93%</td><td class="g5">12.14%</td></tr>
+<tr><td class="dim-cell">googleadwords_int</td><td class="g0">54706</td><td class="g0">$94,545</td><td class="g0">1.73</td><td class="g1">4.67</td><td class="g1">7.75</td><td class="g1">1.72</td><td class="g1">3.17</td><td class="g2">1.24%</td><td class="g2">2.77%</td><td class="g2">5.77%</td><td class="g2">9.58%</td><td class="g2">16.45%</td><td class="g2">30.33%</td><td class="g3">1.10%</td><td class="g3">2.14%</td><td class="g3">3.87%</td><td class="g3">6.17%</td><td class="g3">10.15%</td><td class="g3">17.63%</td><td class="g4">2.34%</td><td class="g4">4.90%</td><td class="g4">9.63%</td><td class="g4">15.74%</td><td class="g4">26.60%</td><td class="g4">47.96%</td><td class="g5">38.37%</td><td class="g5">25.52%</td><td class="g5">20.15%</td><td class="g5">15.77%</td><td class="g5">11.58%</td></tr>
+<tr><td class="dim-cell">unityads_int</td><td class="g0">12715</td><td class="g0">$72,935</td><td class="g0">5.74</td><td class="g1">4.32</td><td class="g1">6.99</td><td class="g1">1.69</td><td class="g1">3.28</td><td class="g2">0.59%</td><td class="g2">1.27%</td><td class="g2">2.55%</td><td class="g2">4.13%</td><td class="g2">6.98%</td><td class="g2">13.55%</td><td class="g3">1.12%</td><td class="g3">2.07%</td><td class="g3">3.24%</td><td class="g3">4.91%</td><td class="g3">7.76%</td><td class="g3">12.88%</td><td class="g4">1.71%</td><td class="g4">3.33%</td><td class="g4">5.80%</td><td class="g4">9.04%</td><td class="g4">14.75%</td><td class="g4">26.43%</td><td class="g5">39.79%</td><td class="g5">25.54%</td><td class="g5">18.54%</td><td class="g5">13.76%</td><td class="g5">10.51%</td></tr>
+<tr><td class="dim-cell">Facebook Ads</td><td class="g0">2084</td><td class="g0">$5,261</td><td class="g0">2.52</td><td class="g1">3.42</td><td class="g1">5.28</td><td class="g1">1.47</td><td class="g1">2.03</td><td class="g2">1.54%</td><td class="g2">3.28%</td><td class="g2">5.25%</td><td class="g2">8.11%</td><td class="g2">11.95%</td><td class="g2">16.48%</td><td class="g3">0.83%</td><td class="g3">1.90%</td><td class="g3">2.80%</td><td class="g3">3.93%</td><td class="g3">6.04%</td><td class="g3">9.47%</td><td class="g4">2.37%</td><td class="g4">5.18%</td><td class="g4">8.05%</td><td class="g4">12.04%</td><td class="g4">17.98%</td><td class="g4">25.95%</td><td class="g5">30.33%</td><td class="g5">17.32%</td><td class="g5">12.00%</td><td class="g5">9.74%</td><td class="g5">7.01%</td></tr>
+<tr><td class="dim-cell">mintegral_int</td><td class="g0">275</td><td class="g0">$1,461</td><td class="g0">5.31</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g3">1.15%</td><td class="g3">1.38%</td><td class="g3">1.76%</td><td class="g3">2.00%</td><td class="g3">2.24%</td><td class="g3">2.62%</td><td class="g4">1.15%</td><td class="g4">1.38%</td><td class="g4">1.76%</td><td class="g4">2.00%</td><td class="g4">2.24%</td><td class="g4">2.62%</td><td class="g5">12.36%</td><td class="g5">5.45%</td><td class="g5">2.91%</td><td class="g5">2.55%</td><td class="g5">2.18%</td></tr>
+</tbody></table></div></div>
+<div class="media-block"><div class="media-title">IAA</div><div class="table-wrap"><table><thead><tr><th class="gh dim-gh">渠道</th><th colspan="3" class="gh g0">基础</th><th colspan="4" class="gh g1">IAP倍率</th><th colspan="6" class="gh g2">IAP roas</th><th colspan="6" class="gh g3">IAA roas</th><th colspan="6" class="gh g4">total roas</th><th colspan="5" class="gh g5">留存</th></tr><tr><th>渠道</th><th class="g0">installs</th><th class="g0">cost</th><th class="g0">CPI</th><th class="g1">0-3</th><th class="g1">0-6</th><th class="g1">6-13</th><th class="g1">6-29</th><th class="g2">D0 IAP</th><th class="g2">D1 IAP</th><th class="g2">D3 IAP</th><th class="g2">D6 IAP</th><th class="g2">D13 IAP</th><th class="g2">D29 IAP</th><th class="g3">D0 IAA</th><th class="g3">D1 IAA</th><th class="g3">D3 IAA</th><th class="g3">D6 IAA</th><th class="g3">D13 IAA</th><th class="g3">D29 IAA</th><th class="g4">D0 tot</th><th class="g4">D1 tot</th><th class="g4">D3 tot</th><th class="g4">D6 tot</th><th class="g4">D13 tot</th><th class="g4">D29 tot</th><th class="g5">次留</th><th class="g5">3留</th><th class="g5">7留</th><th class="g5">13留</th><th class="g5">29留</th></tr></thead><tbody><tr style="font-weight:700;background:#eef"><td class="dim-cell">合计</td><td class="g0">38931</td><td class="g0">$45,314</td><td class="g0">1.16</td><td class="g1">6.06</td><td class="g1">11.83</td><td class="g1">1.82</td><td class="g1">2.98</td><td class="g2">0.37%</td><td class="g2">1.04%</td><td class="g2">2.27%</td><td class="g2">4.42%</td><td class="g2">8.06%</td><td class="g2">13.16%</td><td class="g3">1.94%</td><td class="g3">3.64%</td><td class="g3">5.77%</td><td class="g3">7.99%</td><td class="g3">11.83%</td><td class="g3">18.48%</td><td class="g4">2.32%</td><td class="g4">4.68%</td><td class="g4">8.04%</td><td class="g4">12.41%</td><td class="g4">19.89%</td><td class="g4">31.64%</td><td class="g5">39.66%</td><td class="g5">24.87%</td><td class="g5">18.58%</td><td class="g5">14.47%</td><td class="g5">10.13%</td></tr>
+<tr><td class="dim-cell">googleadwords_int</td><td class="g0">9679</td><td class="g0">$32,228</td><td class="g0">3.33</td><td class="g1">6.37</td><td class="g1">11.63</td><td class="g1">1.74</td><td class="g1">2.87</td><td class="g2">0.36%</td><td class="g2">1.10%</td><td class="g2">2.29%</td><td class="g2">4.18%</td><td class="g2">7.28%</td><td class="g2">11.97%</td><td class="g3">1.86%</td><td class="g3">3.41%</td><td class="g3">5.32%</td><td class="g3">7.10%</td><td class="g3">10.23%</td><td class="g3">15.17%</td><td class="g4">2.22%</td><td class="g4">4.51%</td><td class="g4">7.61%</td><td class="g4">11.28%</td><td class="g4">17.51%</td><td class="g4">27.14%</td><td class="g5">38.81%</td><td class="g5">26.21%</td><td class="g5">20.43%</td><td class="g5">15.74%</td><td class="g5">11.40%</td></tr>
+<tr><td class="dim-cell">applovin_int</td><td class="g0">9279</td><td class="g0">$5,735</td><td class="g0">0.62</td><td class="g1">3.18</td><td class="g1">4.09</td><td class="g1">2.98</td><td class="g1">4.78</td><td class="g2">0.19%</td><td class="g2">0.33%</td><td class="g2">0.61%</td><td class="g2">0.78%</td><td class="g2">2.33%</td><td class="g2">3.74%</td><td class="g3">2.52%</td><td class="g3">4.81%</td><td class="g3">7.62%</td><td class="g3">11.18%</td><td class="g3">17.51%</td><td class="g3">29.26%</td><td class="g4">2.71%</td><td class="g4">5.14%</td><td class="g4">8.22%</td><td class="g4">11.97%</td><td class="g4">19.84%</td><td class="g4">32.99%</td><td class="g5">46.06%</td><td class="g5">29.68%</td><td class="g5">22.35%</td><td class="g5">17.70%</td><td class="g5">12.39%</td></tr>
+<tr><td class="dim-cell">Facebook Ads</td><td class="g0">8971</td><td class="g0">$4,691</td><td class="g0">0.52</td><td class="g1">5.86</td><td class="g1">13.94</td><td class="g1">1.88</td><td class="g1">2.97</td><td class="g2">0.91%</td><td class="g2">1.98%</td><td class="g2">5.36%</td><td class="g2">12.74%</td><td class="g2">23.95%</td><td class="g2">37.87%</td><td class="g3">1.59%</td><td class="g3">3.06%</td><td class="g3">5.36%</td><td class="g3">7.83%</td><td class="g3">12.04%</td><td class="g3">18.85%</td><td class="g4">2.50%</td><td class="g4">5.04%</td><td class="g4">10.71%</td><td class="g4">20.56%</td><td class="g4">35.99%</td><td class="g4">56.73%</td><td class="g5">37.62%</td><td class="g5">23.30%</td><td class="g5">17.23%</td><td class="g5">13.60%</td><td class="g5">9.33%</td></tr>
+<tr><td class="dim-cell">unityads_int</td><td class="g0">11002</td><td class="g0">$2,660</td><td class="g0">0.24</td><td class="g1">—</td><td class="g1">—</td><td class="g1">2.88</td><td class="g1">6.83</td><td class="g2">0.00%</td><td class="g2">0.15%</td><td class="g2">0.15%</td><td class="g2">0.64%</td><td class="g2">1.83%</td><td class="g2">4.34%</td><td class="g3">2.40%</td><td class="g3">4.94%</td><td class="g3">8.02%</td><td class="g3">12.07%</td><td class="g3">18.65%</td><td class="g3">34.73%</td><td class="g4">2.40%</td><td class="g4">5.09%</td><td class="g4">8.16%</td><td class="g4">12.70%</td><td class="g4">20.48%</td><td class="g4">39.07%</td><td class="g5">36.68%</td><td class="g5">20.91%</td><td class="g5">14.89%</td><td class="g5">11.36%</td><td class="g5">7.74%</td></tr>
+</tbody></table></div></div>
+<div class="media-block"><div class="media-title">IAP</div><div class="table-wrap"><table><thead><tr><th class="gh dim-gh">渠道</th><th colspan="3" class="gh g0">基础</th><th colspan="4" class="gh g1">IAP倍率</th><th colspan="6" class="gh g2">IAP roas</th><th colspan="6" class="gh g3">IAA roas</th><th colspan="6" class="gh g4">total roas</th><th colspan="5" class="gh g5">留存</th></tr><tr><th>渠道</th><th class="g0">installs</th><th class="g0">cost</th><th class="g0">CPI</th><th class="g1">0-3</th><th class="g1">0-6</th><th class="g1">6-13</th><th class="g1">6-29</th><th class="g2">D0 IAP</th><th class="g2">D1 IAP</th><th class="g2">D3 IAP</th><th class="g2">D6 IAP</th><th class="g2">D13 IAP</th><th class="g2">D29 IAP</th><th class="g3">D0 IAA</th><th class="g3">D1 IAA</th><th class="g3">D3 IAA</th><th class="g3">D6 IAA</th><th class="g3">D13 IAA</th><th class="g3">D29 IAA</th><th class="g4">D0 tot</th><th class="g4">D1 tot</th><th class="g4">D3 tot</th><th class="g4">D6 tot</th><th class="g4">D13 tot</th><th class="g4">D29 tot</th><th class="g5">次留</th><th class="g5">3留</th><th class="g5">7留</th><th class="g5">13留</th><th class="g5">29留</th></tr></thead><tbody><tr style="font-weight:700;background:#eef"><td class="dim-cell">合计</td><td class="g0">22819</td><td class="g0">$216,981</td><td class="g0">9.51</td><td class="g1">4.75</td><td class="g1">7.93</td><td class="g1">1.79</td><td class="g1">3.11</td><td class="g2">1.14%</td><td class="g2">2.86%</td><td class="g2">5.40%</td><td class="g2">9.00%</td><td class="g2">16.13%</td><td class="g2">27.97%</td><td class="g3">0.03%</td><td class="g3">0.03%</td><td class="g3">0.05%</td><td class="g3">0.06%</td><td class="g3">0.08%</td><td class="g3">2.68%</td><td class="g4">1.16%</td><td class="g4">2.90%</td><td class="g4">5.44%</td><td class="g4">9.06%</td><td class="g4">16.20%</td><td class="g4">30.65%</td><td class="g5">34.33%</td><td class="g5">22.50%</td><td class="g5">17.64%</td><td class="g5">14.47%</td><td class="g5">10.59%</td></tr>
+<tr><td class="dim-cell">googleadwords_int</td><td class="g0">14615</td><td class="g0">$95,424</td><td class="g0">6.53</td><td class="g1">4.77</td><td class="g1">8.13</td><td class="g1">1.87</td><td class="g1">3.34</td><td class="g2">1.12%</td><td class="g2">2.81%</td><td class="g2">5.33%</td><td class="g2">9.09%</td><td class="g2">17.01%</td><td class="g2">30.32%</td><td class="g3">0.02%</td><td class="g3">0.03%</td><td class="g3">0.05%</td><td class="g3">0.06%</td><td class="g3">0.09%</td><td class="g3">2.08%</td><td class="g4">1.14%</td><td class="g4">2.84%</td><td class="g4">5.38%</td><td class="g4">9.15%</td><td class="g4">17.10%</td><td class="g4">32.40%</td><td class="g5">33.42%</td><td class="g5">22.32%</td><td class="g5">17.21%</td><td class="g5">14.01%</td><td class="g5">10.21%</td></tr>
+<tr><td class="dim-cell">applovin_int</td><td class="g0">5442</td><td class="g0">$90,402</td><td class="g0">16.61</td><td class="g1">5.19</td><td class="g1">8.96</td><td class="g1">1.68</td><td class="g1">2.74</td><td class="g2">0.90%</td><td class="g2">2.36%</td><td class="g2">4.69%</td><td class="g2">8.10%</td><td class="g2">13.61%</td><td class="g2">22.20%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.01%</td><td class="g3">0.01%</td><td class="g3">3.57%</td><td class="g4">0.91%</td><td class="g4">2.36%</td><td class="g4">4.70%</td><td class="g4">8.11%</td><td class="g4">13.61%</td><td class="g4">25.77%</td><td class="g5">36.03%</td><td class="g5">22.23%</td><td class="g5">18.01%</td><td class="g5">14.66%</td><td class="g5">10.33%</td></tr>
+<tr><td class="dim-cell">Facebook Ads</td><td class="g0">2471</td><td class="g0">$20,812</td><td class="g0">8.42</td><td class="g1">4.34</td><td class="g1">6.31</td><td class="g1">1.84</td><td class="g1">3.26</td><td class="g2">2.16%</td><td class="g2">5.41%</td><td class="g2">9.39%</td><td class="g2">13.64%</td><td class="g2">25.06%</td><td class="g2">44.54%</td><td class="g3">0.15%</td><td class="g3">0.16%</td><td class="g3">0.19%</td><td class="g3">0.23%</td><td class="g3">0.27%</td><td class="g3">2.67%</td><td class="g4">2.31%</td><td class="g4">5.57%</td><td class="g4">9.58%</td><td class="g4">13.87%</td><td class="g4">25.32%</td><td class="g4">47.21%</td><td class="g5">35.09%</td><td class="g5">22.70%</td><td class="g5">17.85%</td><td class="g5">15.26%</td><td class="g5">11.53%</td></tr>
+<tr><td class="dim-cell">unityads_int</td><td class="g0">291</td><td class="g0">$10,343</td><td class="g0">35.54</td><td class="g1">3.31</td><td class="g1">5.42</td><td class="g1">1.77</td><td class="g1">3.43</td><td class="g2">1.25%</td><td class="g2">2.65%</td><td class="g2">4.15%</td><td class="g2">6.80%</td><td class="g2">12.02%</td><td class="g2">23.33%</td><td class="g3">0.08%</td><td class="g3">0.10%</td><td class="g3">0.13%</td><td class="g3">0.15%</td><td class="g3">0.17%</td><td class="g3">0.44%</td><td class="g4">1.33%</td><td class="g4">2.75%</td><td class="g4">4.28%</td><td class="g4">6.95%</td><td class="g4">12.19%</td><td class="g4">23.76%</td><td class="g5">41.58%</td><td class="g5">35.05%</td><td class="g5">30.58%</td><td class="g5">27.49%</td><td class="g5">26.80%</td></tr>
+</tbody></table></div></div>
+<div class="media-block"><div class="media-title">Organic（自然量）</div><div class="table-wrap"><table><thead><tr><th class="gh dim-gh">渠道</th><th colspan="3" class="gh g0">基础</th><th colspan="4" class="gh g1">IAP倍率</th><th colspan="6" class="gh g2">IAP roas</th><th colspan="6" class="gh g3">IAA roas</th><th colspan="6" class="gh g4">total roas</th><th colspan="5" class="gh g5">留存</th></tr><tr><th>渠道</th><th class="g0">installs</th><th class="g0">cost</th><th class="g0">CPI</th><th class="g1">0-3</th><th class="g1">0-6</th><th class="g1">6-13</th><th class="g1">6-29</th><th class="g2">D0 IAP</th><th class="g2">D1 IAP</th><th class="g2">D3 IAP</th><th class="g2">D6 IAP</th><th class="g2">D13 IAP</th><th class="g2">D29 IAP</th><th class="g3">D0 IAA</th><th class="g3">D1 IAA</th><th class="g3">D3 IAA</th><th class="g3">D6 IAA</th><th class="g3">D13 IAA</th><th class="g3">D29 IAA</th><th class="g4">D0 tot</th><th class="g4">D1 tot</th><th class="g4">D3 tot</th><th class="g4">D6 tot</th><th class="g4">D13 tot</th><th class="g4">D29 tot</th><th class="g5">次留</th><th class="g5">3留</th><th class="g5">7留</th><th class="g5">13留</th><th class="g5">29留</th></tr></thead><tbody><tr style="font-weight:700;background:#eef"><td class="dim-cell">合计</td><td class="g0">57744</td><td class="g0">$0</td><td class="g0">0.00</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g5">35.74%</td><td class="g5">22.65%</td><td class="g5">17.45%</td><td class="g5">13.80%</td><td class="g5">9.99%</td></tr>
+<tr><td class="dim-cell">Organic</td><td class="g0">57744</td><td class="g0">$0</td><td class="g0">0.00</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g1">—</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g2">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g3">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g4">0.00%</td><td class="g5">35.74%</td><td class="g5">22.65%</td><td class="g5">17.45%</td><td class="g5">13.80%</td><td class="g5">9.99%</td></tr>
+</tbody></table></div></div>
+
+<script>
+// ── 主Tab 切换 ──────────────────────────────────────────────
+function showMainTab(i) {
+  document.querySelectorAll('.main-tab-pane').forEach((p,j) => p.classList.toggle('active', i===j));
+  document.querySelectorAll('.main-tab-btn').forEach((b,j) => b.classList.toggle('active', i===j));
+}
+
+// ── 子Tab 切换 ──────────────────────────────────────────────
+function showSubTab(prefix, i) {
+  var panes = document.querySelectorAll('[id^="' + prefix + '-sub"]');
+  var btns  = document.querySelectorAll('.sub-tab-btn');
+  // 找到当前 sub-tab-bar 容器
+  panes.forEach((p, j) => p.classList.toggle('active', j===i));
+  // 只更新当前激活主Tab的子Tab按钮
+  var activeMain = document.querySelector('.main-tab-pane.active');
+  if (activeMain) {
+    activeMain.querySelectorAll('.sub-tab-btn').forEach((b, j) => b.classList.toggle('active', j===i));
+  }
+}
+
+// ── 渠道层级子Tab切换（汇总/手法） ──────────────────────────
+function showChSubTab(i) {
+  document.querySelectorAll('.ch-sub-tab-pane').forEach((p,j) => p.classList.toggle('active', i===j));
+  document.querySelectorAll('.ch-sub-tab-btn').forEach((b,j) => b.classList.toggle('active', i===j));
+}
+
+// ── 渠道手法渠道切换 ─────────────────────────────────────────
+function showChMethodTab(i) {
+  document.querySelectorAll('.ch-method-tab-pane').forEach((p,j) => p.classList.toggle('active', i===j));
+  document.querySelectorAll('.ch-method-tab-btn').forEach((b,j) => b.classList.toggle('active', i===j));
+}
+
+// ── 渠道Campaign渠道切换（独立，避免与手法子Tab串台）─────────────
+function showChCampTab(i) {
+  document.querySelectorAll('.ch-camp-tab-pane').forEach((p,j) => p.classList.toggle('active', i===j));
+  document.querySelectorAll('.ch-camp-tab-btn').forEach((b,j) => b.classList.toggle('active', i===j));
+}
+
+// ── 搜索过滤 ──────────────────────────────────────────────
+function filterBlocks(inp, paneId) {
+  var q = inp.value.toLowerCase();
+  document.querySelectorAll('#' + paneId + ' .media-block').forEach(function(b) {
+    var titleEl = b.querySelector('.media-title');
+    b.style.display = (titleEl && titleEl.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+// ── Campaign层级 渠道子Tab 切换 ──────────────────────────────
+function showCampTab(i) {
+  document.querySelectorAll('.camp-tab-pane').forEach(function(p,j) { p.classList.toggle('active', i===j); });
+  document.querySelectorAll('.camp-tab-btn').forEach(function(b,j) { b.classList.toggle('active', i===j); });
+}
+
+// ── Campaign层级 汇总/分国家 切换 ────────────────────────────
+function switchCampSection(i, sec) {
+  document.getElementById('csec-sum-'+i).style.display = (sec==='sum') ? '' : 'none';
+  document.getElementById('csec-geo-'+i).style.display = (sec==='geo') ? '' : 'none';
+  document.getElementById('csec-btn-sum-'+i).classList.toggle('active', sec==='sum');
+  document.getElementById('csec-btn-geo-'+i).classList.toggle('active', sec==='geo');
+}
+
+// ── Campaign geo 分天/分周 切换 ──────────────────────────────
+function switchCampGeo(cid, type) {
+  document.getElementById('csgeo-day-'+cid).style.display = (type==='day') ? '' : 'none';
+  document.getElementById('csgeo-week-'+cid).style.display = (type==='week') ? '' : 'none';
+  document.getElementById('csgeo-btn-day-'+cid).classList.toggle('active', type==='day');
+  document.getElementById('csgeo-btn-week-'+cid).classList.toggle('active', type==='week');
+}
+
+// ── 渠道分布 本周/上周 切换 ──────────────────────────────────
+function switchMediaDist(type) {
+  document.getElementById('mdist-this').style.display = (type === 'this') ? '' : 'none';
+  document.getElementById('mdist-last').style.display = (type === 'last') ? '' : 'none';
+  document.getElementById('mdist-btn-this').classList.toggle('active', type==='this');
+  document.getElementById('mdist-btn-last').classList.toggle('active', type==='last');
+}
+
+// ── 周折叠 展开/收起 ────────────────────────────────────────
+function toggleWeek(wid) {
+  var rows = document.querySelectorAll('.day-row[data-wid="' + wid + '"]');
+  var weekRow = document.querySelector('.week-row[data-wid="' + wid + '"]');
+  var isExpanded = weekRow && weekRow.classList.contains('expanded');
+  rows.forEach(function(r) {
+    r.style.display = isExpanded ? 'none' : '';
+  });
+  if (weekRow) weekRow.classList.toggle('expanded', !isExpanded);
+}
+
+// ── 渠道行 展开/收起（渠道分布） ─────────────────────────────
+function toggleMedia(mid) {
+  var rows = document.querySelectorAll('.type-row[data-mid="' + mid + '"]');
+  var mediaRow = document.querySelector('.media-row[data-mid="' + mid + '"]');
+  var isExpanded = mediaRow && mediaRow.classList.contains('expanded');
+  rows.forEach(function(r) {
+    r.style.display = isExpanded ? 'none' : '';
+  });
+  if (mediaRow) mediaRow.classList.toggle('expanded', !isExpanded);
+}
+
+// ── 列组折叠 ────────────────────────────────────────────────
+var _cgCollapsed = {};
+function toggleColGroup(gi) {
+  var collapsed = _cgCollapsed[gi];
+  _cgCollapsed[gi] = !collapsed;
+  var isNowCollapsed = !collapsed;
+  // 切换 th/td（gpos>0 的列隐藏）
+  document.querySelectorAll('[data-gi="' + gi + '"]').forEach(function(el) {
+    var pos = parseInt(el.getAttribute('data-gpos') || '0');
+    if (pos > 0) el.style.display = isNowCollapsed ? 'none' : '';
+  });
+  // 更新组头 colspan
+  document.querySelectorAll('th.cg-hdr[data-gi="' + gi + '"]').forEach(function(th) {
+    var total = parseInt(th.getAttribute('data-total') || '1');
+    th.setAttribute('colspan', isNowCollapsed ? 1 : total);
+  });
+  // 更新箭头（同一 gi 的所有箭头）
+  var arrowCls = 'cg-arrow-' + gi;
+  document.querySelectorAll('.' + arrowCls).forEach(function(el) {
+    el.textContent = isNowCollapsed ? '▶' : '◀';
+  });
+}
+
+// ── geo 表排序 ──────────────────────────────────────────────
+function geoSort(th) {
+  var tid = th.dataset.tid, colidx = +th.dataset.col;
+  var tbl = document.getElementById(tid);
+  var rows = [...tbl.tBodies[0].rows];
+  var arrow = th.querySelector('.sort-arrow');
+  var asc = !arrow.classList.contains('asc');
+  tbl.querySelectorAll('.sort-arrow').forEach(function(a) { a.className = 'sort-arrow'; });
+  arrow.classList.add(asc ? 'asc' : 'desc');
+  rows.sort(function(a, b) {
+    var av = (a.cells[colidx] && a.cells[colidx].dataset.v) || (a.cells[colidx] && a.cells[colidx].textContent) || '';
+    var bv = (b.cells[colidx] && b.cells[colidx].dataset.v) || (b.cells[colidx] && b.cells[colidx].textContent) || '';
+    var an = parseFloat(av.replace('%','')), bn = parseFloat(bv.replace('%',''));
+    if (!isNaN(an) && !isNaN(bn)) return asc ? an-bn : bn-an;
+    return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  rows.forEach(function(r) { tbl.tBodies[0].appendChild(r); });
+  applyGeoFilters(tid);
+}
+
+// ── geo 表下拉筛选 ──────────────────────────────────────────
+function geoFilter(sel) {
+  applyGeoFilters(sel.dataset.tid);
+}
+function applyGeoFilters(tid) {
+  var tbl = document.getElementById(tid);
+  var filters = [...tbl.querySelectorAll('.col-filter')].map(function(s) {
+    return {colidx: +s.dataset.col, val: s.value};
+  });
+  [...tbl.tBodies[0].rows].forEach(function(r) {
+    var hide = filters.some(function(f) {
+      return f.val && ((r.cells[f.colidx] && r.cells[f.colidx].dataset.v) || (r.cells[f.colidx] && r.cells[f.colidx].textContent)) !== f.val;
+    });
+    r.style.display = hide ? 'none' : '';
+  });
+}
+</script>
+</body>
+</html>
