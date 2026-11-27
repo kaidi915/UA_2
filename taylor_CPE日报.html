@@ -231,27 +231,20 @@ function applyComparisonStatus(element, measurement = {}) {
 }
 
 function kpiBadge(kpi) {
-    // Last-7-day ROI per Dx vs the taylor-CPE standard. Annotation only, not a cheating verdict.
+    // Channel heading shows fixed KPI thresholds only; verdicts live in TGA cells.
     const wrap = document.createElement('span');
     wrap.className = 'badge kpi-badge';
-    wrap.append(document.createTextNode('AF近7天参考 '));
-    wrap.title = 'AF近7天回收参考，包含未成熟队列当前累计收入 / 全部成本；达标与未达标仅标在TGA ROAS列';
+    wrap.title = '渠道KPI回收标准；达标判定仅见TGA ROAS列';
     if (!kpi.has_standard) {
         wrap.textContent = 'KPI：无标准';
         return wrap;
     }
+    wrap.append(document.createTextNode(kpi.basis === 'iap' ? 'KPI（TGA IAP） ' : 'KPI（TGA总收入） '));
     for (const [day, value] of Object.entries(kpi.days)) {
-        if (value.status === 'immature' && value.standard == null) continue;
+        if (value.standard == null) continue;
         const item = document.createElement('span');
         item.className = 'kpi-item';
-        if (value.roi == null) {
-            item.textContent = 'D' + day + ' —';
-            item.classList.add('kpi-immature');
-        } else {
-            const std = ''; // Standards are judged only in TGA cells.
-            item.textContent = 'D' + day + ' ' + value.roi.toFixed(1) + '%' + std;
-        }
-        applyDataStatus(item, value); // AF header values are reference only, never KPI verdicts.
+        item.textContent = 'D' + day + ' ' + value.standard + '%';
         wrap.append(item, ' ');
     }
     return wrap;
